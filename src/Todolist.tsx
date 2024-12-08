@@ -11,11 +11,11 @@ type PropsType = {
     todolistId: string
     title: string
     tasks: Array<TaskType>
-    removeTask: (todolistId: string, taskId: string) => void
-    changeFilter: (todolistId: string, value: FilterValuesType) => void
-    addTask: (todolistId: string, title: string) => void
-    changeTaskStatus: (todolistId: string, taskId: string, isDone: boolean) => void
     filter: FilterValuesType
+    removeTask: (payload:{todolistId: string, taskId: string}) => void
+    changeFilter: (payload: {todolistId: string, value: FilterValuesType}) => void
+    addTask: (payload:{todolistId: string, title: string}) => void
+    changeTaskStatus: (payload:{todolistId: string, taskId: string, isDone: boolean}) => void
     removeTodolist: (todolistId: string) => void
 }
 
@@ -26,7 +26,7 @@ export function Todolist(props: PropsType) {
 
     const addTask = () => {
         if (title.trim() !== "") {
-            props.addTask(props.todolistId, title.trim());
+            props.addTask({todolistId: props.todolistId, title: title.trim()});
             setTitle("");
         } else {
             setError("Title is required");
@@ -44,13 +44,22 @@ export function Todolist(props: PropsType) {
         }
     }
 
-    const onAllClickHandler = () => props.changeFilter(props.todolistId, "all");
-    const onActiveClickHandler = () => props.changeFilter(props.todolistId, "active");
-    const onCompletedClickHandler = () => props.changeFilter(props.todolistId, "completed");
+    const onAllClickHandler = () => props.changeFilter({todolistId: props.todolistId, value: "all"});
+    const onActiveClickHandler = () => props.changeFilter({todolistId: props.todolistId, value: "active"});
+    const onCompletedClickHandler = () => props.changeFilter({todolistId: props.todolistId, value: "completed"});
 
     const removeTodolistHandler = () => {
         props.removeTodolist(props.todolistId)
     }
+
+    const filterOfTasks = () => {
+        switch (props.filter) {
+            case "active": return props.tasks.filter(t => !t.isDone);
+            case "completed": return props.tasks.filter(t => t.isDone);
+            default: return props.tasks
+        }
+    }
+    const tasksForTodolist = filterOfTasks()
 
     return <div>
         <h3>
@@ -69,10 +78,10 @@ export function Todolist(props: PropsType) {
         </div>
         <ul>
             {
-                props.tasks.map(t => {
-                    const onClickHandler = () => props.removeTask(props.todolistId, t.id)
+                tasksForTodolist.map(t => {
+                    const onClickHandler = () => props.removeTask({todolistId: props.todolistId, taskId: t.id})
                     const onChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
-                        props.changeTaskStatus(props.todolistId, t.id, e.currentTarget.checked);
+                        props.changeTaskStatus({todolistId: props.todolistId, taskId: t.id, isDone: e.currentTarget.checked});
                     }
 
                     return <li key={t.id} className={t.isDone ? "is-done" : ""}>

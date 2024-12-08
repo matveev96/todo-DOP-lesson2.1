@@ -68,7 +68,8 @@ function App() {
         console.log(tasks)
     }
 
-    function removeTask(todolistId: string, taskId: string) {
+    function removeTask(payload:{todolistId: string, taskId: string}) {
+        const {todolistId, taskId} = payload
         setTasks({
             ...tasks,
             [todolistId]:
@@ -76,49 +77,43 @@ function App() {
         })
     }
 
-    function addTask(todolistId: string, title: string) {
+    function addTask(payload:{todolistId: string, title: string}) {
+        const {todolistId, title} = payload
         let newTask = {id: v1(), title: title, isDone: false};
         setTasks({...tasks, [todolistId]: {...tasks[todolistId], data: [newTask, ...tasks[todolistId].data]}})
     }
 
-    function changeStatus(todolistId: string, taskId: string, newIsDone: boolean) {
+    function changeStatus(payload:{todolistId: string, taskId: string, isDone: boolean}) {
+        const {todolistId, taskId, isDone } = payload
         setTasks({
             ...tasks,
             [todolistId]:
                 {
                     ...tasks[todolistId],
-                    data: tasks[todolistId].data.map(el => el.id === taskId ? {...el, isDone: newIsDone} : el)
+                    data: tasks[todolistId].data.map(el => el.id === taskId ? {...el, isDone: isDone} : el)
                 }
         })
     }
 
-    function changeFilter(todolistId: string, value: FilterValuesType) {
+    function changeFilter(payload: {todolistId: string, value: FilterValuesType}) {
+        const {todolistId, value} = payload
         setTasks({...tasks, [todolistId]: {...tasks[todolistId], filter: value}})
     }
 
     return (
         <div className="App">
-
             {todolists.map((el) => {
-                let tasksForTodolist = tasks[el.id].data;
-
-                if (tasks[el.id].filter === "active") {
-                    tasksForTodolist = tasks[el.id].data.filter(t => !t.isDone);
-                }
-                if (tasks[el.id].filter === "completed") {
-                    tasksForTodolist = tasks[el.id].data.filter(t => t.isDone);
-                }
                 return (
                     <Todolist
                         key={el.id}
                         todolistId={el.id}
                         title={el.title}
-                        tasks={tasksForTodolist}
+                        tasks={tasks[el.id].data}
+                        filter={tasks[el.id].filter}
                         removeTask={removeTask}
                         changeFilter={changeFilter}
                         addTask={addTask}
                         changeTaskStatus={changeStatus}
-                        filter={tasks[el.id].filter}
                         removeTodolist={removeTodolist}
                     />
                 )
